@@ -1,6 +1,20 @@
 import { Formik } from "formik";
 import InputMask from "react-input-mask";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import "./styles.css";
+
+const MySwal = withReactContent(Swal);
+
+function scaleIMC(imc){
+  if(imc > 18.5 && imc <= 24.9){
+    return "NORMAL";
+  } else if(imc > 24.9 && imc <= 29.9){
+    return "SOBREPESO";
+  } else {
+    return "OBESIDADE";
+  }
+}
 
 function App() {
   return (
@@ -57,7 +71,15 @@ function App() {
             return errors;
           }
         }
-        onSubmit={() => alert("ok")}
+        onSubmit={(values) => MySwal.fire({
+          title: "Meu Formulário",
+          footer: `${values.nome}`,
+          didOpen: () => {
+            MySwal.clickConfirm()
+          }
+        }).then(() => {
+          return MySwal.fire(<p>{values.nome}</p>)
+        })}
       >
         {({ values, handleSubmit, errors, handleChange, resetForm }) => (
           <form onSubmit={handleSubmit}>
@@ -99,10 +121,6 @@ function App() {
 
             <label>
               <span>Telefone</span>
-              {/* <input autoComplete="off"
-                type="tel" value={values.telefone} 
-                name="telefone" onChange={handleChange}
-              /> */}
               <InputMask mask="(99) 99999-9999" 
                 autoComplete="off"
                 onChange={handleChange} 
@@ -114,10 +132,6 @@ function App() {
 
             <label>
               <span>CPF</span>
-              {/* <input autoComplete="off"
-                type="text" value={values.cpf} 
-                name="cpf" onChange={handleChange}
-              /> */}
               <InputMask mask="999.999.999-99" 
                 autoComplete="off"
                 onChange={handleChange} 
@@ -144,6 +158,15 @@ function App() {
               />
               <span>{errors.altura}</span>
             </label>
+
+            {values.peso && values.altura ? (
+              <>
+                <h1>IMC = {(values.peso / (values.altura * values.altura)).toFixed(2)}</h1>
+                <h3>{scaleIMC(values.peso / (values.altura * values.altura))}</h3>
+              </>
+            ) : (
+              <h1>----</h1>
+            )}
           </form>
         )}
       </Formik>
